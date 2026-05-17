@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}База клиентов{% endblock %}
+
+{% block content %}
+<div class="card p-4 shadow-sm border-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="fw-bold mb-0">Список клиентов</h5>
+        <button class="btn btn-primary" onclick="openClientModal()">
+            <i class="bi bi-person-plus me-2"></i> Новый клиент
+        </button>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr class="small text-uppercase">
+                    <th>ID</th>
+                    <th>ФИО</th>
+                    <th>Телефон</th>
+                    <th>Скидка (%)</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for client in clients %}
+                <tr>
+                    <td>#{{ client.c_id }}</td>
+                    <td class="fw-medium">{{ client.c_fname }} {{ client.c_name }} {{ client.c_mname }}</td>
+                    <td>{{ client.c_phone }}</td>
+                    <td><span class="badge bg-success bg-opacity-10 text-success">{{ client.c_discount }}%</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="openClientModal({{ client.c_id }}, '{{ client.c_fname }}', '{{ client.c_name }}', '{{ client.c_mname }}', '{{ client.c_phone }}', {{ client.c_discount }})">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteClient({{ client.c_id }})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Данные клиента (Универсальный для добавления и редактирования) -->
+<div class="modal fade" id="clientModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="modalTitle">Клиент</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="clientForm">
+                    <input type="hidden" name="id" id="clientId">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Фамилия</label>
+                        <input type="text" class="form-control" name="fname" id="clientFname" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Имя</label>
+                        <input type="text" class="form-control" name="name" id="clientName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Отчество</label>
+                        <input type="text" class="form-control" name="mname" id="clientMname">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Телефон</label>
+                        <input type="text" class="form-control" name="phone" id="clientPhone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Скидка (%)</label>
+                        <input type="number" class="form-control" name="discount" id="clientDiscount" value="0" min="0" max="100">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary px-4" onclick="saveClient()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const modal = new bootstrap.Modal(document.getElementById('clientModal'));
+
+    function openClientModal(id = null, fname = '', name = '', mname = '', phone = '', discount = 0) {
+        document.getElementById('clientId').value = id || '';
+        document.getElementById('clientFname').value = fname;
+        document.getElementById('clientName').value = name;
+        document.getElementById('clientMname').value = mname;
+        document.getElementById('clientPhone').value = phone;
+        document.getElementById('clientDiscount').value = discount;
+        
+        document.getElementById('modalTitle').innerText = id ? 'Редактировать клиента' : 'Новый клиент';
+        modal.show();
+    }
+
+    async function saveClient() {
+        const id = document.getElementById('clientId').value;
+        const form = document.getElementById('clientForm');
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        
+        const url = id ? `/api/v1/clients/${id}` : '/api/v1/clients';
+        const method = id ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            location.reload();
+        }
+    }
+
+    async function deleteClient(id) {
+        if (confirm('Вы уверены, что хотите удалить этого клиента?')) {
+            const response = await fetch(`/api/v1/clients/${id}`, { method: 'DELETE' });
+            if (response.ok) {
+                location.reload();
+            }
+        }
+    }
+</script>
+{% endblock %}
