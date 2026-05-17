@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Услуги и цены{% endblock %}
+
+{% block content %}
+<div class="card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="fw-bold mb-0">Прайс-лист</h5>
+    </div>
+    <div class="row g-4">
+        {% for service in services %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card border p-3 h-100">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="bg-primary bg-opacity-10 p-2 rounded">
+                        <i class="bi bi-gear-wide-connected text-primary fs-4"></i>
+                    </div>
+                    <span class="badge bg-light text-dark border">{{ service.s_dur }} мин</span>
+                </div>
+                <h6 class="fw-bold mb-2">{{ service.s_name }}</h6>
+                <p class="text-muted small mb-3">Профессиональная услуга с гарантией качества.</p>
+                <div class="mt-auto d-flex justify-content-between align-items-center">
+                    <span class="fs-5 fw-bold text-primary">{{ service.s_price }} ₽</span>
+                    <button class="btn btn-sm btn-outline-primary">Изменить</button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

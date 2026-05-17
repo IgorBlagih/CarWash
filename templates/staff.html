@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Персонал{% endblock %}
+
+{% block content %}
+<div class="card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="fw-bold mb-0">Мойщики</h5>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newWasherModal">
+            <i class="bi bi-person-plus me-2"></i> Добавить сотрудника
+        </button>
+    </div>
+    <div class="row g-4">
+        {% for washer in washers %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card border p-3">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-secondary bg-opacity-10 p-3 rounded-circle me-3">
+                        <i class="bi bi-person text-secondary fs-3"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0">{{ washer.w_fname }} {{ washer.w_name }}</h6>
+                        <span class="status-badge {% if washer.w_status == 'Свободен' %}status-free{% else %}status-busy{% endif %}">
+                            {{ washer.w_status }}
+                        </span>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <button class="btn btn-sm btn-outline-secondary w-100 me-2">График</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteWasher({{ washer.w_id }})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal New Washer -->
+<div class="modal fade" id="newWasherModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Новый сотрудник</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="washerForm">
+                    <div class="mb-3">
+                        <label class="form-label">Фамилия</label>
+                        <input type="text" class="form-control" name="fname" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Имя</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Отчество</label>
+                        <input type="text" class="form-control" name="mname">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="saveWasher()">Добавить</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function saveWasher() {
+        const form = document.getElementById('washerForm');
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        
+        await apiCall('/api/v1/washer', 'POST', data);
+        location.reload();
+    }
+
+    async function deleteWasher(id) {
+        if (confirm('Удалить сотрудника из базы?')) {
+            await apiCall(`/api/v1/washer?id=${id}`, 'DELETE');
+            location.reload();
+        }
+    }
+</script>
+{% endblock %}
