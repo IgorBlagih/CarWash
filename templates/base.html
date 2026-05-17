@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarWash Pro System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        :root {
+            --sidebar-width: 250px;
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --bg-light: #f8f9fa;
+        }
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        #sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background-color: var(--primary-color);
+            color: white;
+            padding-top: 20px;
+            z-index: 1000;
+        }
+        #sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            border-radius: 0;
+            transition: all 0.3s;
+        }
+        #sidebar .nav-link:hover, #sidebar .nav-link.active {
+            color: white;
+            background-color: var(--secondary-color);
+            border-left: 4px solid var(--accent-color);
+        }
+        #content {
+            margin-left: var(--sidebar-width);
+            padding: 30px;
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .status-free { background-color: #d4edda; color: #155724; }
+        .status-busy { background-color: #f8d7da; color: #721c24; }
+        .status-process { background-color: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <div class="px-4 mb-4">
+            <h4 class="fw-bold"><i class="bi bi-droplet-fill me-2"></i>CarWash Pro</h4>
+            <small class="text-white-50">Система управления</small>
+        </div>
+        <nav class="nav flex-column">
+            <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{{ url_for('index') }}">
+                <i class="bi bi-speedometer2 me-2"></i> Дашборд
+            </a>
+            <a class="nav-link {% if request.path == '/orders' %}active{% endif %}" href="{{ url_for('orders_page') }}">
+                <i class="bi bi-receipt me-2"></i> Заказы
+            </a>
+            <a class="nav-link {% if request.path == '/clients' %}active{% endif %}" href="{{ url_for('clients_page') }}">
+                <i class="bi bi-people me-2"></i> Клиенты
+            </a>
+            <a class="nav-link {% if request.path == '/services' %}active{% endif %}" href="{{ url_for('services_page') }}">
+                <i class="bi bi-list-check me-2"></i> Услуги
+            </a>
+            <a class="nav-link {% if request.path == '/staff' %}active{% endif %}" href="{{ url_for('staff_page') }}">
+                <i class="bi bi-person-badge me-2"></i> Персонал
+            </a>
+        </nav>
+    </div>
+
+    <div id="content">
+        <header class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold text-dark">{% block title %}{% endblock %}</h2>
+            <div class="user-profile d-flex align-items-center">
+                <span class="me-3 text-muted">Администратор: <strong>Иван И.</strong></span>
+                <div class="bg-white rounded-circle p-2 shadow-sm">
+                    <i class="bi bi-person-circle fs-4"></i>
+                </div>
+            </div>
+        </header>
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global helper for API calls
+        async function apiCall(url, method = 'GET', data = null) {
+            const options = {
+                method,
+                headers: { 'Content-Type': 'application/json' }
+            };
+            if (data) options.body = JSON.stringify(data);
+            const response = await fetch(url, options);
+            return response.json();
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
