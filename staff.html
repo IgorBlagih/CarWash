@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Персонал{% endblock %}
+
+{% block content %}
+<div class="card p-4 shadow-sm border-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="fw-bold mb-0">Сотрудники автомойки</h5>
+    </div>
+    <div class="row g-4">
+        {% for washer in washers %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 p-4 rounded-4 shadow-sm bg-white">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-secondary bg-opacity-10 p-4 rounded-circle me-3">
+                        <i class="bi bi-person text-secondary fs-2"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1 fs-5">{{ washer.w_fname }} {{ washer.w_name }}</h6>
+                        <span class="status-badge {% if washer.w_status == 'Свободен' %}status-free{% else %}status-busy{% endif %}">
+                            {{ washer.w_status }}
+                        </span>
+                    </div>
+                </div>
+                <div class="p-3 bg-light rounded-3 mb-4 small">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">Тип:</span>
+                        <span class="fw-bold">Мойщик</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">ID:</span>
+                        <span class="fw-bold">#{{ washer.w_id }}</span>
+                    </div>
+                </div>
+                <div class="d-grid">
+                    <button class="btn btn-outline-primary py-2 fw-bold" onclick="showWasherInfo({{ washer.w_id }})">
+                        <i class="bi bi-info-circle me-2"></i> Информация
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal Информация о мойщике -->
+<div class="modal fade" id="washerInfoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Карточка сотрудника</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <div class="bg-primary bg-opacity-10 d-inline-block p-4 rounded-circle mb-3">
+                        <i class="bi bi-person-vcard text-primary fs-1"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1" id="infoFullName">-</h4>
+                    <span id="infoStatus" class="badge p-2 px-3 fw-bold">-</span>
+                </div>
+                
+                <div class="list-group list-group-flush small border rounded-3 overflow-hidden">
+                    <div class="list-group-item d-flex justify-content-between p-3">
+                        <span class="text-muted">Отчество:</span>
+                        <span id="infoMname" class="fw-bold">-</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between p-3">
+                        <span class="text-muted">Текущий бокс:</span>
+                        <span id="infoBox" class="fw-bold text-primary">-</span>
+                    </div>
+                </div>
+                
+                <div class="mt-4 p-3 bg-light rounded-3 small text-muted">
+                    <i class="bi bi-calendar-check me-2"></i> Сотрудник оформлен в штат. Все налоги и взносы уплачены.
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const infoModal = new bootstrap.Modal(document.getElementById('washerInfoModal'));
+
+    async function showWasherInfo(id) {
+        const response = await fetch(`/api/v1/washer/${id}`);
+        const data = await response.json();
+        
+        document.getElementById('infoFullName').innerText = `${data.fname} ${data.name}`;
+        document.getElementById('infoMname').innerText = data.mname || '-';
+        document.getElementById('infoStatus').innerText = data.status;
+        document.getElementById('infoStatus').className = `badge p-2 px-3 fw-bold ${data.status === 'Свободен' ? 'bg-success' : 'bg-danger'}`;
+        document.getElementById('infoBox').innerText = data.current_box ? `Бокс #${data.current_box}` : 'Нет (свободен)';
+        
+        infoModal.show();
+    }
+</script>
+{% endblock %}

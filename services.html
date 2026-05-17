@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Услуги и цены{% endblock %}
+
+{% block content %}
+<div class="card p-4 shadow-sm border-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="fw-bold mb-0">Прайс-лист автомойки</h5>
+        <button class="btn btn-primary" onclick="openServiceModal()">
+            <i class="bi bi-plus-lg me-2"></i> Добавить услугу
+        </button>
+    </div>
+    <div class="row g-4">
+        {% for service in services %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card border p-4 h-100 rounded-4 shadow-sm transition-hover">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-pill">
+                        <i class="bi bi-gear-wide-connected text-primary fs-4"></i>
+                    </div>
+                    <span class="badge bg-light text-dark border p-2">{{ service.s_dur }} мин</span>
+                </div>
+                <h6 class="fw-bold mb-2 fs-5">{{ service.s_name }}</h6>
+                <p class="text-muted small mb-4">Качественная услуга. Время выполнения {{ service.s_dur }} минут.</p>
+                <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                    <span class="fs-4 fw-bold text-primary">{{ service.s_price }} ₽</span>
+                    <div>
+                        <button class="btn btn-sm btn-light me-1" onclick="openServiceModal({{ service.s_id }}, '{{ service.s_name }}', {{ service.s_price }}, {{ service.s_dur }})">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteService({{ service.s_id }})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal Данные услуги -->
+<div class="modal fade" id="serviceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="serviceModalTitle">Услуга</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="serviceForm">
+                    <input type="hidden" id="serviceId">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Название услуги</label>
+                        <input type="text" class="form-control" id="serviceName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Цена (₽)</label>
+                        <input type="number" class="form-control" id="servicePrice" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Длительность (мин)</label>
+                        <input type="number" class="form-control" id="serviceDur" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary px-4" onclick="saveService()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const serviceModal = new bootstrap.Modal(document.getElementById('serviceModal'));
+
+    function openServiceModal(id = null, name = '', price = 0, dur = 0) {
+        document.getElementById('serviceId').value = id || '';
+        document.getElementById('serviceName').value = name;
+        document.getElementById('servicePrice').value = price;
+        document.getElementById('serviceDur').value = dur;
+        
+        document.getElementById('serviceModalTitle').innerText = id ? 'Редактировать услугу' : 'Новая услуга';
+        serviceModal.show();
+    }
+
+    async function saveService() {
+        const id = document.getElementById('serviceId').value;
+        const data = {
+            name: document.getElementById('serviceName').value,
+            price: document.getElementById('servicePrice').value,
+            dur: document.getElementById('serviceDur').value
+        };
+        
+        const url = id ? `/api/v1/services/${id}` : '/api/v1/services';
+        const method = id ? 'PUT' : 'POST';
+        
+        await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        location.reload();
+    }
+
+    async function deleteService(id) {
+        if (confirm('Вы уверены, что хотите удалить услугу?')) {
+            await fetch(`/api/v1/services/${id}`, { method: 'DELETE' });
+            location.reload();
+        }
+    }
+</script>
+{% endblock %}
