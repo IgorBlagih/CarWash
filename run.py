@@ -4,25 +4,24 @@ import os
 import time
 
 def install_dependencies():
-    print("Проверка зависимостей...")
-    required = ['flask', 'flask-sqlalchemy', 'sqlalchemy']
+    print("Checking dependencies...")
+    required = ['flask', 'flask-sqlalchemy']
     for package in required:
         try:
             __import__(package.replace('-', '_'))
         except ImportError:
-            print(f"Установка {package}...")
+            print(f"Installing {package}...")
             subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
 def init_db():
     from app import app, db
-    from models import Administrator, Washer, Box, Client, Service, Discount, Order
+    from models import Administrator, Washer, Box, Client, Service, Order
     
     if not os.path.exists('carwash.db'):
-        print("Инициализация базы данных...")
+        print("Initializing database...")
         with app.app_context():
             db.create_all()
             
-            # Seed initial data
             if not Administrator.query.first():
                 admin = Administrator(
                     a_fname="Иванов",
@@ -48,30 +47,20 @@ def init_db():
             
             if not Service.query.first():
                 services = [
-                    Service(s_name="Экспресс-мойка", s_price=500, s_dur=15),
-                    Service(s_name="Стандартная мойка", s_price=800, s_dur=30),
-                    Service(s_name="Комплексная мойка", s_price=1500, s_dur=60),
-                    Service(s_name="Химчистка салона", s_price=3000, s_dur=120),
+                    Service(s_name="Экспресс-мойка", s_price=500.0, s_dur=15),
+                    Service(s_name="Стандартная мойка", s_price=800.0, s_dur=30),
+                    Service(s_name="Комплексная мойка", s_price=1500.0, s_dur=60),
+                    Service(s_name="Химчистка салона", s_price=3000.0, s_dur=120),
                 ]
                 db.session.add_all(services)
-            
-            if not Discount.query.first():
-                discounts = [
-                    Discount(d_marks=5, d_perc=5),
-                    Discount(d_marks=10, d_perc=10),
-                    Discount(d_marks=20, d_perc=15),
-                ]
-                db.session.add_all(discounts)
 
             db.session.commit()
-            print("База данных успешно инициализирована и заполнена.")
+            print("Database initialized.")
 
 if __name__ == "__main__":
-    install_dependencies()
-    # Give a tiny bit of time for imports to be ready if installed
-    time.sleep(1)
+    
+    from app import app
     init_db()
     
-    print("Запуск сервера CarWash Pro System...")
-    from app import app
+    print("Starting CarWash Pro System (Python Flask)...")
     app.run(host='0.0.0.0', port=3000)
